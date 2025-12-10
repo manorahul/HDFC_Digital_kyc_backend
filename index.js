@@ -1,8 +1,8 @@
 // index.js
-import 'dotenv/config';               // <- loads .env immediately
+import dotenv from "dotenv";              // <- loads .env immediately
 import express from "express";
 import bodyParser from "body-parser";
-import { fileURLToPath } from 'url';
+// import { fileURLToPath } from 'url';
 import cors from "cors";
 
 
@@ -20,6 +20,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 
+dotenv.config();
 // app.use(cors());
 
 // app.use(bodyParser.json());
