@@ -6,8 +6,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 
-import routerFactory from "./routes/routes.js";
-import aadhaarRoutes from "./routes/aadhaar.js";
+// import routerFactory from "./routes/routes.js";
+// import aadhaarRoutes from "./routes/aadhaar.js";
 import client from "./config/redis.js"; // config will use process.env now
 // import Connection from './db/db.js';
 // import kycRoutes from './routes/kycRoutes.js';
