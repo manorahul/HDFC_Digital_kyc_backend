@@ -2,17 +2,16 @@
 import { createClient } from "redis";
 
 const redisUrl = process.env.REDIS_URL;
+
 if (!redisUrl) {
   console.error("Missing REDIS_URL in .env");
-  // Optionally throw here to fail fast:
-  // throw new Error("Missing REDIS_URL");
 }
 
 const client = createClient({
   url: redisUrl,
   socket: {
-    // use TLS when the URL is rediss:// or provider needs TLS
-    tls: redisUrl?.startsWith("rediss://") ? true : false,
+    tls: true,                 // ⭐ REQUIRED for Upstash
+    rejectUnauthorized: false // ⭐ Prevents TLS handshake issues
   },
 });
 
@@ -21,7 +20,7 @@ client.on("error", (err) => console.error("Redis connection error:", err));
 (async () => {
   try {
     await client.connect();
-    console.log("Connected to Redis");
+    console.log("🎉 Connected to Upstash Redis Successfully!");
   } catch (err) {
     console.error("Redis connection failed:", err);
   }
