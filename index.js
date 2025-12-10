@@ -42,7 +42,7 @@ await Connection(process.env.DB_URI);
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
-// app.use("/", Router(client));
+app.use("/", Router(client));
 
 
 app.listen(PORT, '0.0.0.0', () => {
