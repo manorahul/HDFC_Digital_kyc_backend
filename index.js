@@ -1,9 +1,9 @@
 // index.js
 import dotenv from "dotenv";              // <- loads .env immediately
 import express from "express";
-// import bodyParser from "body-parser";
+import bodyParser from "body-parser";
 // import { fileURLToPath } from 'url';
-// import cors from "cors";
+import cors from "cors";
 
 
 // import routerFactory from "./routes/routes.js";
