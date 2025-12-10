@@ -1,30 +1,14 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 import KycModel from "../models/kycModel.js";
 
-// Create upload folder if not exists
-const uploadDir = "./uploads/faces";
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer storage config
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        const uniqueName = "face_" + Date.now() + ext;
-        cb(null, uniqueName);
-    },
-});
-
+// -------------------------------------------------------------
+// 1️⃣ Multer Memory Storage (NO FILE SYSTEM)
+// -------------------------------------------------------------
+const storage = multer.memoryStorage();
 export const upload = multer({ storage });
 
 // -------------------------------------------------------------
-//   CONTROLLER: Upload face image + Save to KYC model
+// 2️⃣ Controller: Upload face image → Store Base64 in MongoDB
 // -------------------------------------------------------------
 export const uploadFaceImage = async (req, res) => {
     try {
@@ -54,20 +38,24 @@ export const uploadFaceImage = async (req, res) => {
             });
         }
 
-        // Save image path
-        const faceImagePath = `/uploads/faces/${req.file.filename}`;
-        kyc.faceImage = faceImagePath;
+        // Convert image buffer → Base64 string
+        const base64Image = req.file.buffer.toString("base64");
+        const mimeType = req.file.mimetype; // image/jpeg, image/png, etc.
+
+        // Save full base64 data URI inside MongoDB
+        kyc.faceImage = `data:${mimeType};base64,${base64Image}`;
         await kyc.save();
 
         return res.status(200).json({
             success: true,
-            message: "Face image uploaded successfully",
-            filePath: faceImagePath,
+            message: "Face image stored in database successfully",
+            faceImage: kyc.faceImage, // Base64 preview image
             data: kyc,
         });
+
     } catch (err) {
         console.error("Upload Error:", err);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Internal Server Error",
         });
