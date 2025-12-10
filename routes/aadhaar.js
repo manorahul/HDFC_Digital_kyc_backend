@@ -53,33 +53,23 @@
 //   }
 // );
 
-
-// export default router;
-
-
 import express from "express";
 import multer from "multer";
-import Tesseract from "tesseract.js";
+import { recognizeImage } from "../utils/tesseractConfig.js";
 import { extractQRCode } from "../utils/qrReader.js";
 import { parseAadhaarText } from "../utils/parser.js";
 import KycModel from "../models/kycModel.js";
 
 const router = express.Router();
 
-// ----------------------------------------------------
-// 1️⃣ MULTER MEMORY STORAGE — NO FILE SYSTEM
-// ----------------------------------------------------
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// ----------------------------------------------------
-// 2️⃣ UPLOAD BOTH IMAGES + OCR + QR + SAVE IN DATABASE
-// ----------------------------------------------------
 router.post(
   "/upload",
   upload.fields([
     { name: "front", maxCount: 1 },
-    { name: "back", maxCount: 1 }
+    { name: "back", maxCount: 1 },
   ]),
   async (req, res) => {
     try {
@@ -92,53 +82,40 @@ router.post(
       if (!req.files?.front) {
         return res.status(400).json({ error: "Front Aadhaar image required" });
       }
-
-      // Get KYC record
       let kyc = await KycModel.findOne({ mobile: phone });
       if (!kyc) {
         return res.status(400).json({
-          error: "KYC entry not found. Complete OTP verification first.",
+          error: "KYC entry not found. Complete mobile OTP verification first.",
         });
       }
 
-      // ----------------------------------------------------
-      // 3️⃣ Convert images to Base64
-      // ----------------------------------------------------
-      const frontFile = req.files.front[0];
-      const backFile = req.files.back?.[0];
 
-      const base64Front = `data:${frontFile.mimetype};base64,${frontFile.buffer.toString("base64")}`;
+      const frontFile = req.files.front[0];
+      const backFile = req.files.back?.[0] || null;
+
+      const base64Front = `data:${frontFile.mimetype};base64,${frontFile.buffer.toString(
+        "base64"
+      )}`;
+
       const base64Back = backFile
-        ? `data:${backFile.mimetype};base64,${backFile.buffer.toString("base64")}`
+        ? `data:${backFile.mimetype};base64,${backFile.buffer.toString(
+            "base64"
+          )}`
         : null;
 
-      // ----------------------------------------------------
-      // 4️⃣ OCR (Tesseract) using buffer
-      // ----------------------------------------------------
-      const frontBlob = new Blob([frontFile.buffer], { type: frontFile.mimetype });
-      const ocrResult = await Tesseract.recognize(frontBlob, "eng");
-      const ocrText = ocrResult.data.text;
+      const ocrText = await recognizeImage(frontFile.buffer, frontFile.mimetype);
 
-      // ----------------------------------------------------
-      // 5️⃣ QR CODE extraction (memory buffer)
-      // ----------------------------------------------------
       const qrData = await extractQRCode(frontFile.buffer);
 
-      // ----------------------------------------------------
-      // 6️⃣ Parse Aadhaar text
-      // ----------------------------------------------------
       const parsed = parseAadhaarText(ocrText);
 
-      // ----------------------------------------------------
-      // 7️⃣ Update KYC record in MongoDB
-      // ----------------------------------------------------
+
       kyc.aadhaarFrontImage = base64Front;
       kyc.aadhaarBackImage = base64Back;
       kyc.ocr_text = ocrText;
       kyc.qr_data = qrData;
       kyc.parsed_data = parsed;
 
-      // Update KYC main fields
       if (parsed?.name) kyc.fullName = parsed.name;
       if (parsed?.dob) kyc.dob = parsed.dob;
       if (parsed?.gender) kyc.gender = parsed.gender;
@@ -146,12 +123,10 @@ router.post(
 
       await kyc.save();
 
-      // ----------------------------------------------------
-      // 8️⃣ RESPONSE
-      // ----------------------------------------------------
+   
       return res.status(200).json({
         success: true,
-        message: "Aadhaar uploaded, OCR extracted & saved successfully",
+        message: "Aadhaar uploaded & OCR processed successfully",
         data: kyc,
       });
 
