@@ -6,7 +6,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 
-// import routerFactory from "./routes/routes.js";
+import Router from "./routes/routes.js";
 import aadhaarRoutes from "./routes/aadhaar.js";
 import client from "./config/redis.js"; // config will use process.env now
 // import Connection from './db/db.js';
@@ -27,7 +27,6 @@ dotenv.config();
 // app.use(bodyParser.urlencoded({ extended: true }));
 
 // // routerFactory is a function that returns an express.Router configured with the passed client
-// app.use("/", routerFactory(client));
 // app.use("/aadhaar", aadhaarRoutes);
 // app.use("/uploads", express.static("uploads"));
 // app.use("/kyc", kycRoutes);
@@ -43,6 +42,7 @@ dotenv.config();
 app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
+app.use("/", Router(client));
 
 
 app.listen(PORT, () => {
