@@ -7,10 +7,6 @@ import { upload, uploadFaceImage } from "../controllers/faceUploadController.js"
 export default function routerFactory(client) {
   const router = express.Router();
 
-  router.get("/", (req, res) => {
-    res.status(200).json({message: "Response from the server"});
-  });
-
   // Generate OTP
   router.post("/generate-otp", (req, res) => generateOTP(client)(req, res));
 
