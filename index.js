@@ -10,11 +10,11 @@ import Router from "./routes/routes.js";
 import aadhaarRoutes from "./routes/aadhaar.js";
 import client from "./config/redis.js"; // config will use process.env now
 import Connection from './db/db.js';
-// import kycRoutes from './routes/kycRoutes.js';
+import kycRoutes from './routes/kycRoutes.js';
 
-// import adminAuthRoutes from "./routes/adminAuthRoutes.js";
-// import adminKycRoutes from "./routes/adminKycRoutes.js";
-// // import kycRoutes from './routes/kyc.js';
+import adminAuthRoutes from "./routes/adminAuthRoutes.js";
+import adminKycRoutes from "./routes/adminKycRoutes.js";
+// import kycRoutes from './routes/kyc.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,12 +27,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // // routerFactory is a function that returns an express.Router configured with the passed client
-// app.use("/aadhaar", aadhaarRoutes);
-// app.use("/uploads", express.static("uploads"));
-// app.use("/kyc", kycRoutes);
+app.use("/aadhaar", aadhaarRoutes);
+app.use("/uploads", express.static("uploads"));
+app.use("/kyc", kycRoutes);
 
-// app.use("/admin/auth", adminAuthRoutes);
-// app.use("/admin/kyc", adminKycRoutes);
+app.use("/admin/auth", adminAuthRoutes);
+app.use("/admin/kyc", adminKycRoutes);
 
 
 
